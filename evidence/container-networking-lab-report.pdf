@@ -1,0 +1,180 @@
+%PDF-1.4
+%
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Length 693 >>
+stream
+q 0.08 0.10 0.14 rg 28 112 556 570 re f Q
+BT /F1 16 Tf 36 740 Td 0.10 0.16 0.24 rg (1. Failed access -- reproduction attempt) Tj ET
+BT /F1 9 Tf 36 82 Td 0.15 0.15 0.15 rg (Docker is not installed in this execution environment, so a container-level curl failure could not be captured here.) Tj ET
+BT /F1 10 Tf 44 648 Td 0.78 0.91 0.78 rg 14 TL
+($ docker build -t netlab .) Tj
+T*
+(bash: docker: command not found) Tj
+T*
+($ docker run -d -p 8080:8080 --name app netlab) Tj
+T*
+(bash: docker: command not found) Tj
+T*
+($ docker ps) Tj
+T*
+(bash: docker: command not found) Tj
+T*
+($ curl -i localhost:8080/health) Tj
+T*
+(curl: \(7\) Failed to connect to localhost port 8080: Connection refused) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 12 /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 648 >>
+stream
+q 0.08 0.10 0.14 rg 28 112 556 570 re f Q
+BT /F1 16 Tf 36 740 Td 0.10 0.16 0.24 rg (2. Port inspection -- environment limitation) Tj ET
+BT /F1 9 Tf 36 82 Td 0.15 0.15 0.15 rg (The required Docker PORTS/log inspection is blocked by the missing Docker CLI; the application configuration below identifies the reachable-port chain.) Tj ET
+BT /F1 10 Tf 44 648 Td 0.78 0.91 0.78 rg 14 TL
+($ docker port app) Tj
+T*
+(bash: docker: command not found) Tj
+T*
+($ docker logs app) Tj
+T*
+(bash: docker: command not found) Tj
+T*
+($ command -v docker || true) Tj
+T*
+() Tj
+T*
+($ sed -n '1,16p' Dockerfile) Tj
+T*
+(EXPOSE 8080) Tj
+T*
+(CMD ["node", "server.js"]) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 12 /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 692 >>
+stream
+q 0.08 0.10 0.14 rg 28 112 556 570 re f Q
+BT /F1 16 Tf 36 740 Td 0.10 0.16 0.24 rg (3. The mismatch -- pre-fix source inspection) Tj ET
+BT /F1 9 Tf 36 82 Td 0.15 0.15 0.15 rg (The original process bound to 127.0.0.1, which only accepts loopback connections inside the container rather than Docker-forwarded traffic.) Tj ET
+BT /F1 10 Tf 44 648 Td 0.78 0.91 0.78 rg 14 TL
+($ git show HEAD^:server.js | sed -n '1,12p') Tj
+T*
+(const express = require\('express'\);) Tj
+T*
+(const app = express\(\);) Tj
+T*
+() Tj
+T*
+(const PORT = 8080;) Tj
+T*
+(const HOST = '127.0.0.1';) Tj
+T*
+() Tj
+T*
+(app.get\('/health', \(req, res\) => {) Tj
+T*
+(  res.status\(200\).json\({ status: 'ok' }\);) Tj
+T*
+(}\);) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 12 /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 759 >>
+stream
+q 0.08 0.10 0.14 rg 28 112 556 570 re f Q
+BT /F1 16 Tf 36 740 Td 0.10 0.16 0.24 rg (4. The fix -- bind every container interface) Tj ET
+BT /F1 9 Tf 36 82 Td 0.15 0.15 0.15 rg (The server now binds to 0.0.0.0:8080, matching the Dockerfile's exposed port and the README's 8080:8080 publish mapping.) Tj ET
+BT /F1 10 Tf 44 648 Td 0.78 0.91 0.78 rg 14 TL
+($ git diff HEAD^ HEAD -- server.js) Tj
+T*
+(-const HOST = '127.0.0.1';) Tj
+T*
+(+// A container port must listen on all container interfaces so Docker can) Tj
+T*
+(+// forward traffic from the published host port to this process.) Tj
+T*
+(+const HOST = '0.0.0.0';) Tj
+T*
+() Tj
+T*
+($ docker run -d -p 8080:8080 --name app netlab) Tj
+T*
+(# Run this command after rebuilding in a Docker-enabled environment.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 12 /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 675 >>
+stream
+q 0.08 0.10 0.14 rg 28 112 556 570 re f Q
+BT /F1 16 Tf 36 740 Td 0.10 0.16 0.24 rg (5. Reachable -- post-fix health check) Tj ET
+BT /F1 9 Tf 36 82 Td 0.15 0.15 0.15 rg (A real local process check after the binding fix returns HTTP 200 and the expected JSON body; Docker publishing will forward to this same 0.0.0.0:8080 listener.) Tj ET
+BT /F1 10 Tf 44 648 Td 0.78 0.91 0.78 rg 14 TL
+($ node server.js) Tj
+T*
+(Server running on http://0.0.0.0:8080) Tj
+T*
+($ curl -i --max-time 5 localhost:8080/health) Tj
+T*
+(HTTP/1.1 200 OK) Tj
+T*
+(X-Powered-By: Express) Tj
+T*
+(Content-Type: application/json; charset=utf-8) Tj
+T*
+(Content-Length: 15) Tj
+T*
+() Tj
+T*
+({"status":"ok"}) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 12 /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R] /Count 5 >>
+endobj
+13 0 obj
+<< /Type /Catalog /Pages 12 0 R >>
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000015 00000 n 
+0000000083 00000 n 
+0000000827 00000 n 
+0000000950 00000 n 
+0000001649 00000 n 
+0000001772 00000 n 
+0000002515 00000 n 
+0000002638 00000 n 
+0000003448 00000 n 
+0000003571 00000 n 
+0000004298 00000 n 
+0000004423 00000 n 
+0000004506 00000 n 
+trailer
+<< /Size 14 /Root 13 0 R >>
+startxref
+4557
+%%EOF
