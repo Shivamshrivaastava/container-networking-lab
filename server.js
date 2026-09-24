@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 
 const PORT = 8080;
-const HOST = '127.0.0.1';
+// A container port must listen on all container interfaces so Docker can
+// forward traffic from the published host port to this process.
+const HOST = '0.0.0.0';
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
